@@ -1,0 +1,126 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    list-style: none;
+}
+
+input {
+    outline: none;
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+.toDoList {
+    position: relative;
+    width: 50vw;
+    height: 100vh;
+    margin: 0 25vw;
+}
+
+.title {
+    height: 40px;
+    line-height: 40px;
+    font-size: 22px;
+    width: 700;
+}
+
+.header {
+    font-size: 46px;
+    color: rgb(138, 134, 134);
+    text-align: center;
+    opacity: .8;
+}
+
+.add {
+    width: 100%;
+}
+
+
+.add input {
+    height: 26px;
+    width: 200px;
+    border-radius: 5px;
+}
+
+.main {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.main li {
+    display: flex;
+    align-items: center;
+    height: 30px;
+    width: 100%;
+    border: 1px solid grey;
+    border-radius: 10px;
+    box-shadow: 2px 1px 4px rgba(121, 121, 121, 0.7);
+    margin-bottom: 10px;
+}
+
+.done {
+    background-color: #888888;
+    opacity: .8;
+}
+
+.main .toggle {
+    height: 20px;
+    width: 20px;
+    margin: 0 10px;
+}
+
+.main .edit,
+.main .editing{
+    width:65%;
+    overflow: hidden;
+}
+
+.main .editing {
+    position: absolute;
+    left: 41px;
+    height: 20px;
+    display: none;
+}
+
+.main .del {
+    position: absolute;
+    right: 5px;
+    color: red;
+    font-size: 12px;
+    padding: 2px;
+    border: 1px solid red;
+    border-radius: 5px;
+}
+
+.sum{
+    display: flex;
+    position: absolute;
+    right: 0px;
+    top: 70px;
+    height: 25px;
+    width: 50px;
+    font-size: 20px;
+    text-align: center;
+}
+
+#doNum{
+    color: #000000;
+    width: 50%;
+    background-color: rgb(197, 194, 194);
+}
+
+#doneNum{
+    color: #ffffff;
+    background-color: rgb(61, 59, 59);
+    width: 50%;
+}
+
+
+

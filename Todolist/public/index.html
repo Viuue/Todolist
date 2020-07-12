@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/index.css">
+    <!-- 进度条css -->
+    <link rel='stylesheet' href='css/nprogress.css' />
+</head>
+
+<body>
+    <section class="toDoList">
+        <header class="header">ToDoList</header>
+        <div class="add">
+            <span class="title">待添加</span>
+            <input type="text" id="addTask" placeholder="按Enter添加任务">
+        </div>
+        <section class="main">
+            <ul id="taskBox"></ul>
+        </section>
+        <section class="sum">
+            <div id="doNum"></div>
+            <div id="doneNum"></div>
+        </section>
+    </section>
+    <script src="js/jQuery.min.js"></script>
+    <!-- 进度条js -->
+    <script src='js/nprogress.js'></script>
+    <!-- 模板引擎 -->
+    <script src="js/template-web.js"></script>
+    <script type="text/html" id="taskApi">
+        <span class="title">待完成</span><br>
+            {{each tasks}} 
+                {{if $value.complete== false}}
+                <li>
+                    <input type="checkbox" class="toggle" {{ $value.complete ? "checked" : ""}}>
+                    <p class="edit">{{$value.title}}</p>
+                    <input type="text" class="editing">
+                    <a href="javascript:;" class='del' data-id="{{$value._id}}">删除</a>
+                </li>
+                {{/if}}
+            {{/each}}
+        <span class="title">已完成</span>
+            {{each tasks}} 
+                {{if $value.complete== true}}
+                <li class="done">
+                    <input type="checkbox" class="toggle" {{ $value.complete ? "checked" : ""}}>
+                    <p class="edit">{{$value.title}}</p>
+                    <input type="text" class="editing">
+                    <a href="javascript:;" class='del' data-id="{{$value._id}}">删除</a>
+                </li>
+                {{/if}}
+            {{/each}}
+    </script>
+    <script>
+        var taskAry = [];
+        var taskBox = $('#taskBox');
+        var addTask = $('#addTask');
+        var doNum = $('#doNum');
+        var doneNum = $('#doneNum');
+        // 作用：将拼接好的数组渲染在html页面中
+        function render() {
+            var html = template('taskApi', {
+                tasks: taskAry
+            })
+            taskBox.html(html);
+        }
+
+        // 作用：统计待完成任务和已完成任务的数量
+        function sum() {
+            var sum1 = 0, sum2 = 0;
+            sum1 = taskAry.filter(item => item.complete == false).length;
+            sum2 = taskAry.filter(item => item.complete == true).length;
+            doNum.html(sum1);
+            doneNum.html(sum2);
+        }
+
+        // 显示数据库数据功能
+        $.ajax({
+            url: '/todolist/task',
+            type: 'get',
+            success: function (response) {
+                taskAry = response;
+                render();
+                sum();
+            }
+        });
+
+        // 任务添加功能
+        addTask.on('keyup', function (event) {
+            if (event.keyCode == 13) {
+                const title = $(this).val();
+                if (title.trim().length == 0) {
+                    return;
+                }
+                $.ajax({
+                    url: '/todolist/addTask',
+                    type: 'post',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        complete: false,
+                        title: title
+                    }),
+                    success: function (response) {
+                        taskAry.push(response);
+                        render();
+                        addTask.val('');
+                        sum();
+                    }
+                });
+
+            }
+        });
+
+        // 任务删除功能
+        taskBox.on('click', '.del', function () {
+            const id = $(this).attr('data-id');
+            $.ajax({
+                url: '/todolist/delTask',
+                type: 'delete',
+                data: {
+                    _id: id
+                },
+                success: function (response) {
+                    // 将任务从数组删除，进行数组与数据库的同步
+                    const index = taskAry.findIndex(item => item._id == id);
+                    taskAry.splice(index, 1);
+                    render();
+                    sum();
+                }
+            });
+        })
+
+        // 任务状态更改功能
+        taskBox.on('change', '.toggle', function () {
+            const status = $(this).is(':checked');
+            const id = $(this).siblings('a').attr('data-id');
+            $.ajax({
+                url: '/todolist/togTask',
+                type: 'put',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    _id: id,
+                    complete: status
+                }),
+                success: function (response) {
+                    const task = taskAry.find(item => item._id == id);
+                    task.complete = response.complete;
+                    render();
+                    sum();
+                }
+            });
+        })
+
+        // 任务修改功能
+        taskBox.on('dblclick', '.edit', function () {
+            const title = $(this).html();
+            const editing = $(this).siblings('.editing');
+            editing.attr('style', 'display:block');
+            editing.val(title);
+            // 自动获取文本框焦点
+            editing.focus();
+        })
+        taskBox.on('blur', '.editing', function () {
+            const id = $(this).siblings('a').attr('data-id');
+            var newTitle = $(this).val();
+            $(this).attr('style', 'display:block');
+            $.ajax({
+                url: '/todolist/editTask',
+                type: 'put',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    _id: id,
+                    title: newTitle
+                }),
+                success: function (response) {
+                    const task = taskAry.find(item => item._id == id);
+                    task.title = response.title;
+                    render();
+                }
+            })
+        })
+
+        // 页面ajax请求开始时
+        $(document).on('ajaxStart', function () {
+            NProgress.start();
+
+        });
+        // 页面ajax请求结束时
+        $(document).on('ajaxComplete', function () {
+            NProgress.done();
+        });
+    </script>
+</body>
+
+</html>
