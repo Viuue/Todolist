@@ -1,2 +1,3 @@
 # Todolist
-简易的Todolist项目
+基于js+express+mongodb写的Todolist案例
+
